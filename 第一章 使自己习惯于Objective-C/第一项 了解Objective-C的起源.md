@@ -30,3 +30,27 @@ Objective-C作为C的超集，所有的C的特征在Objective-C中都是可用�
 在这里只存在一个NSString实例，但是存在两个NSString *类型的变量同时指向该实例。也就意味着当前的栈结构已经在内存中分配了2个位的指针变量的大小空间(在32位架构中，一个指针变量占据了4个字节，在64位架构中占据了8个字节)，该部分内存保存了NSString实例的内存地址。
 
 图1.1 阐述了以上的布局，其中data存储了NSString实例，包含一组需要展现真实字符串的字节数组。
+
+![内存中的栈分配与堆分配](http://jiwanqiang.com/wp-content/uploads/EffObjc/1.1.png)
+
+从堆中分配的内存可以被直接管理，相反一个变量倘若从栈中分配，那么当该栈内存的帧出栈之后将会被自动清理。
+
+Memory management of the heap memory is abstracted away by Objective-C. You donot need to usemalloc and free to allocate and deallocate the memory for objects. The Objective-C runtime abstracts this out of the way through a memory-management architecture known as reference counting (see Item 29).
+Sometimes in Objective-C, you will encounter variables that don’t have a * in the definition and might use stack space. These variables are not holding Objective-Cobjects. An example is CGRect, from the CoreGraphics framework:
+	CGRect frame;
+	frame.origin.x = 0.f;
+	frame.origin.y = 10.f;
+	frame.size.width = 100.f;
+	frame.size.height = 150.f;
+	
+CGRect作为一个C结构体，定义如下：
+
+	struct CGRect {
+		CGPoint origin;
+		CGSize size;
+	};
+
+These types of structures are used throughout the system frameworks, where the overhead of using Objective-C objects could affect performance. Creating objects incurs overhead that using structures does not, such as allocating and deallocating heap memory. When nonobject types (int, float,double, char, etc.) are the only data to be held, a structure, such as CGRect, is usually used.Before embarking on writing anything in Objective-C, I encourage you to read texts about the C language and become familiar with the syntax. If you dive straight into Objective-C, you may find certain parts of the syntax confusing.
+### 温故而知新
+* Objective-C is a superset of C, adding object-oriented features. Objective-C uses a messaging structure with dynamic binding, meaning that the type of an object is discovered at runtime. The runtime, rather than the compiler, works out what code to run for a given message.
+* Understanding the core concepts of C will help you write effective Objective-C. In particular, you need to understand the memory model and pointers.
